@@ -62,7 +62,7 @@ function draw_img(cr, img)
 		math.floor((h-sw*ih)/2+0.5),
 		sw, sh, 0, 0)
 	cairo_set_source_surface(cr, cs, 0, 0)
-	cairo_paint(cr)
+	cairo_paint_with_alpha(cr, 0.65)
 	cairo_surface_destroy(cs)
 
 	-- little gradient on cover bottom

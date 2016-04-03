@@ -80,7 +80,7 @@ function set_rgba(cr, c)
 end
 
 function get_ram(ram)
-	if ram < 1024 then
+	if ram < 1000 then
 		return ram .. 'MB'
 	end
 	return (math.floor(ram / 102.4 + 0.5) / 10) .. 'GB'

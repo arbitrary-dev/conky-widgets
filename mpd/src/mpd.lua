@@ -12,15 +12,22 @@ f = {'Noto Sans', 13}
 mc = {0.4, 0.35, 0.36, 1}
 ac = {0.8, 0.3, 0.2, 1}
 
+upd_int = 0.5
 w, h = 256, 256
 time_size = 3
 info_size = 22
 noalbum_title = 'No Album'
 
 function conky_main()
+	-- TODO https://github.com/kAworu/lua-mpd
 	-- get song
 	local song = split(conky_parse('${exec ' .. path .. '/src/get-song.py}'), '\r?\n')
-	if not (song[2] and conky_window) then return end
+	if not (song[2] and conky_window) then
+		conky_set_update_interval(upd_int * 10)
+		return
+	end
+
+	conky_set_update_interval(upd_int)
 
 	-- init
 	local cs = cairo_xlib_surface_create(conky_window.display, conky_window.drawable,
@@ -32,7 +39,6 @@ function conky_main()
 
 	cairo_destroy(cr)
 	cairo_surface_destroy(cs)
-	cr = nil
 end
 
 function draw_img(cr, img)
@@ -102,7 +108,7 @@ function draw_info(cr, song)
 	local y = h + info_size + 13
 
 	-- timeline
-	local t = song[4]
+	local elapsed, total = song[4]:match('([^:]+):([^:]+)')
 	set_rgba_(cr, ac, 0.3)
 	cairo_move_to(cr, 0, y - info_size)
 	cairo_rel_line_to(cr, 0, time_size)
@@ -111,11 +117,11 @@ function draw_info(cr, song)
 	cairo_close_path(cr)
 	cairo_fill(cr)
 
-	-- elapsed time
+	-- time
 	set_rgba(cr, ac)
 	cairo_move_to(cr, 0, y - info_size)
 	cairo_rel_line_to(cr, 0, time_size)
-	cairo_rel_line_to(cr, math.floor(w * t + 0.5), 0)
+	cairo_rel_line_to(cr, math.floor(elapsed * w / total + 0.5), 0)
 	cairo_rel_line_to(cr, 0, -time_size)
 	cairo_close_path(cr)
 	cairo_fill(cr)
@@ -124,12 +130,12 @@ function draw_info(cr, song)
 	cairo_select_font_face(cr, f[1], CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL)
 	cairo_set_font_size(cr, f[2])
 	set_rgba(cr, mc)
-	local upd = tonumber(conky_parse('${updates}')) - 1 -- TODO song position in seconds
 	local noalbum = song[3] == '' or song[3] == noalbum_title
 	local txt = trunc(
-		(noalbum or upd % 8 < 4) and song[2] or song[3],
-		upd % 4 < 2, w - 10, cr, '…')
+		(noalbum or elapsed % 16 < 8) and song[2] or song[3],
+		elapsed % 8 < 4, w - 10, cr, '…')
 	local ext = cairo_text_extents_t:create()
+	tolua.takeownership(ext)
 	cairo_text_extents(cr, txt, ext)
 	cairo_move_to(cr, w / 2 - ext.x_bearing - ext.width / 2, y - 6)
 	cairo_show_text(cr, txt)
@@ -137,7 +143,7 @@ end
 
 function trunc(s, r, w, cr, e)
 	local ext = cairo_text_extents_t:create()
-
+	tolua.takeownership(ext)
 	cairo_text_extents(cr, e, ext)
 	local ew = ext.width
 

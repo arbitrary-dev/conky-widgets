@@ -24,10 +24,10 @@ function conky_main()
 	-- mask
 	cairo_push_group(cr)
 	local w, h = 315, 130 -- mask size
-	local mask_surface = cairo_image_surface_create_from_png(path .. '/img/mask.png')
-	cairo_set_source_surface(cr, mask_surface, 0, 0)
+	local mask = cairo_image_surface_create_from_png(path .. '/img/mask.png')
+	cairo_set_source_surface(cr, mask, 0, 0)
 	cairo_paint(cr)
-	cairo_surface_destroy(mask_surface)
+	cairo_surface_destroy(mask)
 
 	-- time
 	cairo_push_group(cr)
@@ -35,6 +35,7 @@ function conky_main()
 	cairo_select_font_face(cr, ft[1], CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL)
 	cairo_set_font_size(cr, ft[2])
 	local ext = cairo_text_extents_t:create()
+	tolua.takeownership(ext)
 	cairo_text_extents(cr, time, ext)
 	local tx, ty = 9 - ext.x_bearing, h - 10
 
@@ -77,7 +78,6 @@ function conky_main()
 	-- clear
 	cairo_destroy(cr)
 	cairo_surface_destroy(cs)
-	cr=nil
 end
 
 function l(c, m)

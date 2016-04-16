@@ -33,8 +33,9 @@ function conky_main()
 	set_rgba(cr, mc)
 	cairo_paint(cr)
 
-	-- top text
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER)
+
+	-- top text
 	cairo_select_font_face(cr, f[1], CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL)
 	cairo_set_font_size(cr, f[2])
 	cairo_move_to(cr, 11, 20)
@@ -46,15 +47,14 @@ function conky_main()
 	local ext = cairo_text_extents_t:create()
 	cairo_text_extents(cr, temp, ext)
 	cairo_move_to(cr, 31 - ext.x_bearing - math.floor(ext.width / 2), 53)
+	tolua.takeownership(ext)
 	cairo_show_text(cr, temp)
-	
+
 	-- load bars
-	local cpu_str = ''
 	for i = 1, 8, 1 do
-		local cpu = math.floor(conky_parse('${cpu cpu' .. i .. '}') / 100 * 15 + 0.5)
-		cpu_str = cpu_str .. get_cpu(i)
 		local pos_x = 12 + 5 * (i - 1)
 		local full = true -- accentuate full core usage
+		local cpu = get_cpu(i)
 
 		for j = 0, 3, 1 do
 			if bit.band(cpu, bit.lshift(1, j)) == 0 then
@@ -74,7 +74,6 @@ function conky_main()
 	-- clear
 	cairo_destroy(cr)
 	cairo_surface_destroy(cs)
-	cr=nil
 end
 
 function set_rgba(cr, c)

@@ -21,6 +21,7 @@ function conky_main()
 	local mask = cairo_image_surface_create_from_png(path .. '/img/ram.png')
 	cairo_set_source_surface(cr, mask, 0, 0)
 	cairo_paint(cr)
+	cairo_surface_destroy(mask)
 
 	-- colorize
 	cairo_set_operator(cr, CAIRO_OPERATOR_IN)
@@ -35,6 +36,7 @@ function conky_main()
 	ram = string.sub(mem, -3) == 'MiB' and ram or ram * 1024
 	local ram_str = get_ram(ram)
 	local ext = cairo_text_extents_t:create()
+	tolua.takeownership(ext)
 	cairo_text_extents(cr, ram_str, ext)
 	local x, y = 32 - ext.x_bearing - math.floor(ext.width / 2), 35
 
@@ -70,7 +72,6 @@ function conky_main()
 	cairo_pop_group_to_source(cr)
 	cairo_paint(cr)
 
-	cairo_surface_destroy(mask)
 	cairo_destroy(cr)
 	cairo_surface_destroy(cs)
 end

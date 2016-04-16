@@ -43,5 +43,4 @@ if song:
     print('{}{}'.format(
         album if album else no_album,
         ' (' + date + ')' if date else ''))
-    t = status['time'].split(':')
-    print(round(float(t[0])/float(t[1])*100)/100)
+    print(status['time'])

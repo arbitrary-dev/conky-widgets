@@ -26,6 +26,7 @@ function conky_main()
 	cairo_set_font_size(cr, f[2])
 
 	cairo_push_group(cr)
+	-- TODO http://w3.impa.br/~diego/software/luasocket & http://luaxpath.luaforge.net
 	-- 'Sat –13 s4c3;Sun +2 r4c4st;Mon +39 c1'
 	local weather = conky_parse('${exec python ' .. path .. '/src/parse-gismeteo.p}')
 	local i = 0
@@ -38,7 +39,6 @@ function conky_main()
 
 	cairo_destroy(cr)
 	cairo_surface_destroy(cs)
-	cr = nil
 end
 
 function draw_weather(cr, x, y, day, temp, w)
@@ -46,6 +46,7 @@ function draw_weather(cr, x, y, day, temp, w)
 	set_rgba(cr, text_rgba)
 	local text = string.format('%s  %s°C', day, temp)
 	local ext = cairo_text_extents_t:create()
+	tolua.takeownership(ext)
 	cairo_text_extents(cr, text, ext)
 	cairo_move_to(cr, 40 - ext.x_bearing, y + 16 + ext.height / 2)
 	cairo_show_text(cr, text)

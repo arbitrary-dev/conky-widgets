@@ -41,7 +41,7 @@ def parse( d ):
         w_c = check_w(w_c, weather.group(1))
         w_r = check_w(w_r, weather.group(2))
         w_s = check_w(w_s, weather.group(3))
-        w_st = check_w(w_st, weather.group(4))
+        w_st = True if w_st or weather.group(4) else False
 
     temp = round(temp / len(r))
 

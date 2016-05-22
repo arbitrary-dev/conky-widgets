@@ -22,6 +22,7 @@ function conky_main()
 	-- TODO https://github.com/kAworu/lua-mpd
 	-- get song
 	local song = split(conky_parse('${exec ' .. path .. '/src/get-song.py}'), '\r?\n')
+	-- TODO slow down updates on pause
 	if not (song[2] and conky_window) then
 		conky_set_update_interval(upd_int * 10)
 		return
@@ -131,6 +132,8 @@ function draw_info(cr, song)
 	cairo_set_font_size(cr, f[2])
 	set_rgba(cr, mc)
 	local noalbum = song[3] == '' or song[3] == noalbum_title
+	-- TODO no album handling
+	-- TODO slow down updates on pause
 	local txt = trunc(
 		(noalbum or elapsed % 16 < 8) and song[2] or song[3],
 		elapsed % 8 < 4, w - 10, cr, '…')

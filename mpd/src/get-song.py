@@ -12,7 +12,7 @@ mpd_port = 6600
 mpd_dir = '/media/music/'
 cover_pat = re.compile('(cover|folder)\.(jpe?g|png)', re.I)
 no_cover_file = ''
-no_album = 'No Album'
+no_album = ''
 
 c = MPDClient()
 c.connect(mpd_host, mpd_port)
@@ -34,13 +34,15 @@ if song:
             break
     print(cover if cover else no_cover_file)
     artist = song.get('artist')
-    title = song.get('title')
-    print('{}{}'.format(
-        artist + ' – ' if artist else '',
-        title if title else path.basename(song['file'])))
+    title = (song.get('title') or '').strip()
+    if title:
+        print('{}{}'.format(artist + ' – ' if artist else '', title))
+    else:
+        print(path.basename(song['file']))
     date = song.get('date')
-    album = song.get('album')
-    print('{}{}'.format(
-        album if album else no_album,
-        ' (' + date + ')' if date else ''))
+    album = (song.get('album') or no_album).strip()
+    if album:
+        print('{}{}'.format(album, ' (' + date + ')' if date else ''))
+    else:
+        print('')
     print(status['time'])

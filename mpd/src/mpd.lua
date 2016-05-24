@@ -16,7 +16,7 @@ upd_int = 0.5
 w, h = 256, 256
 time_size = 3
 info_size = 22
-noalbum_title = 'No Album'
+noalbum_title = ''
 
 function conky_main()
 	-- TODO https://github.com/kAworu/lua-mpd
@@ -131,11 +131,10 @@ function draw_info(cr, song)
 	cairo_select_font_face(cr, f[1], CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL)
 	cairo_set_font_size(cr, f[2])
 	set_rgba(cr, mc)
-	local noalbum = song[3] == '' or song[3] == noalbum_title
 	-- TODO no album handling
 	-- TODO slow down updates on pause
 	local txt = trunc(
-		(noalbum or elapsed % 16 < 8) and song[2] or song[3],
+		(song[3] == noalbum_title or elapsed % 16 < 8) and song[2] or song[3],
 		elapsed % 8 < 4, w - 10, cr, '…')
 	local ext = cairo_text_extents_t:create()
 	tolua.takeownership(ext)
@@ -150,7 +149,7 @@ function trunc(s, r, w, cr, e)
 	cairo_text_extents(cr, e, ext)
 	local ew = ext.width
 
-	local str = trim(s)
+	local str = s
 	local i = r and -1 or 1
 	cairo_text_extents(cr, str, ext)
 	if ext.width > w then
@@ -162,7 +161,7 @@ function trunc(s, r, w, cr, e)
 				i = i + 1
 				str = str:sub(i)
 			end
-			str = trim(str)
+			
 			cairo_text_extents(cr, str, ext)
 		end
 
@@ -170,11 +169,6 @@ function trunc(s, r, w, cr, e)
 	end
 
 	return str
-end
-
-function trim(s)
-	local n = s:find('%S')
-	return n and s:match('.*%S', n) or ''
 end
 
 function split(str, sep)

@@ -1,6 +1,7 @@
 require 'cairo'
 require 'imlib2'
 require 'cairo_imlib2_helper'
+utf8 = require 'utf8'
 
 -- Widget path
 path = '/home/yonigger/.config/conky/mpd'
@@ -144,31 +145,22 @@ function draw_info(cr, song)
 end
 
 function trunc(s, r, w, cr, e)
+	local str = trim(s)
+	local res = str
+
 	local ext = cairo_text_extents_t:create()
 	tolua.takeownership(ext)
-	cairo_text_extents(cr, e, ext)
-	local ew = ext.width
-
-	local str = s
-	local i = r and -1 or 1
 	cairo_text_extents(cr, str, ext)
-	if ext.width > w then
-		while ext.width + ew > w do
-			if r then
-				i = i - 1
-				str = str:sub(1, i)
-			else
-				i = i + 1
-				str = str:sub(i)
-			end
-			
-			cairo_text_extents(cr, str, ext)
-		end
 
-		str = r and str .. e or e .. str
+	while ext.width > w do
+		str = r and utf8.sub(str, 1, -2) or str = utf8.sub(str, 2)
+		str = trim(str)
+		res = r and str .. ' ' .. e or e .. ' ' .. str
+		
+		cairo_text_extents(cr, res, ext)
 	end
 
-	return str
+	return res
 end
 
 function split(str, sep)
@@ -188,4 +180,9 @@ end
 
 function set_rgba(cr, c)
 	cairo_set_source_rgba(cr, c[1], c[2], c[3], c[4])
+end
+
+function trim(s)
+	local n = utf8.find(s, '%S')
+	return n and utf8.match(s, '.*%S', n) or ''
 end

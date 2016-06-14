@@ -153,7 +153,7 @@ function trunc(s, r, w, cr, e)
 	cairo_text_extents(cr, str, ext)
 
 	while ext.width > w do
-		str = r and utf8.sub(str, 1, -2) or str = utf8.sub(str, 2)
+		str = r and utf8.sub(str, 1, -2) or utf8.sub(str, 2)
 		str = trim(str)
 		res = r and str .. ' ' .. e or e .. ' ' .. str
 		

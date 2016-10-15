@@ -27,9 +27,11 @@ if status and status['state'] == 'stop':
 if song:
     cover = None
     p = mpd_dir + path.dirname(song['file'])
+    cover_pat_song = re.compile(
+        path.splitext(path.basename(song['file']))[0] + '\.(jpe?g|png)', re.I)
     for f in listdir(p):
         tmp = p + '/' + f
-        if cover_pat.fullmatch(f) and path.isfile(tmp):
+        if (cover_pat.fullmatch(f) or cover_pat_song.fullmatch(f)) and path.isfile(tmp):
             cover = tmp
             break
     print(cover if cover else no_cover_file)

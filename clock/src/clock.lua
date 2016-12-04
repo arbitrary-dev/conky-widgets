@@ -67,6 +67,7 @@ function conky_main()
 	local day = tonumber(os.date('%d'))
 	local suff = {[0] = 'th', 'st', 'nd', 'rd', 'th'}
 	day = day .. suff[math.min(day%10, 4)]
+	-- FIXME Wednesday 30th November
 	local date = conky_parse('${time %A, ' .. day .. ' %B}')
 	cairo_select_font_face(cr, fd[1], CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL)
 	cairo_set_font_size(cr, fd[2])

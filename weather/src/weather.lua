@@ -30,7 +30,6 @@ function conky_main()
 	-- 'Sat –13 s4c3;Sun +2 r4c4st;Mon +39 c1'
 	local weather = conky_parse('${exec python ' .. path .. '/src/parse-gismeteo.p}')
 	local i = 0
-	-- TODO update forecast for current day according to time
 	-- TODO justify temperatures
 	for day, temp, w in rex.gmatch(weather, '(\\w+)\\s(.+?)\\s([0-9rsct]*)') do
 		draw_weather(cr, 0, 2*37 - 37 * i, day, temp, w)

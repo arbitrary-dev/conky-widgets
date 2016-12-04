@@ -142,6 +142,8 @@ function draw_info(cr, song)
 	cairo_text_extents(cr, txt, ext)
 	cairo_move_to(cr, w / 2 - ext.x_bearing - ext.width / 2, y - 6)
 	cairo_show_text(cr, txt)
+
+	-- TODO output playback status (repeat, single, random) on barrel
 end
 
 function trunc(s, r, w, cr, e)

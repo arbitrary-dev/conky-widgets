@@ -45,7 +45,7 @@ end
 function draw_weather(cr, x, y, day, temp, w)
 	-- text
 	set_rgba(cr, text_rgba)
-	local text = string.format('%s  %s°C', day, temp)
+	local text = string.format('%s  %s', day, temp)
 	local ext = cairo_text_extents_t:create()
 	tolua.takeownership(ext)
 	cairo_text_extents(cr, text, ext)

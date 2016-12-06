@@ -24,8 +24,9 @@ function conky_main()
   -- mask
   cairo_push_group(cr)
   local w, h = 315, 130 -- mask size
+  local off = 20
   local mask = cairo_image_surface_create_from_png(path .. '/img/mask.png')
-  cairo_set_source_surface(cr, mask, 0, 0)
+  cairo_set_source_surface(cr, mask, off, 0)
   cairo_paint(cr)
   cairo_surface_destroy(mask)
 
@@ -37,7 +38,7 @@ function conky_main()
   local ext = cairo_text_extents_t:create()
   tolua.takeownership(ext)
   cairo_text_extents(cr, time, ext)
-  local tx, ty = 9 - ext.x_bearing, h - 10
+  local tx, ty = off + 9 - ext.x_bearing, h - 10
 
   -- shade
   set_rgba(cr, shd)
@@ -67,12 +68,11 @@ function conky_main()
   local day = tonumber(os.date('%d'))
   local suff = {[0] = 'th', 'st', 'nd', 'rd', 'th'}
   day = day .. suff[math.min(day%10, 4)]
-  -- FIXME Wednesday 30th November
   local date = conky_parse('${time %A, ' .. day .. ' %B}')
   cairo_select_font_face(cr, fd[1], CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL)
   cairo_set_font_size(cr, fd[2])
   cairo_text_extents(cr, date, ext)
-  local tx, ty = 190 - ext.width, ty + 20
+  local tx, ty = off + 190 - ext.width, ty + 20
   cairo_move_to(cr, tx, ty)
   cairo_show_text(cr, date)
 

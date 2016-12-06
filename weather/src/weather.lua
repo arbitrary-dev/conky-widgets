@@ -35,11 +35,19 @@ function conky_main()
     cairo_select_font_face(cr, f[1], CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL)
     cairo_set_font_size(cr, f[2])
 
-    local i = 0
-    -- TODO justify temperatures
-    for day, temp, w in rex.gmatch(weather, '(\\w+)\\s(-?\\d+)\\s([0-9rsct]*)') do
-      draw_weather(cr, 15, 2*37 - 37 * i, day, temp, w)
-      i = i + 1
+    local max_width = 0
+    local data = {}
+    local ext = cairo_text_extents_t:create()
+    tolua.takeownership(ext)
+    for d, t, w in rex.gmatch(weather, '(\\w+)\\s(-?\\d+)\\s([0-9rsct]*)') do
+      table.insert(data, {day = d, temp = t, weather = w})
+      cairo_text_extents(cr, text_dt(d, t), ext)
+      max_width = math.max(max_width, ext.width)
+    end
+    ext = nil
+
+    for i, d in ipairs(data) do
+      draw_weather(cr, 15, 2*37 - 37 * (i - 1), d.day, d.temp, d.weather, max_width)
     end
   end
 
@@ -117,26 +125,42 @@ w2c = {
   c = clouds_rgba
 }
 
-function draw_weather(cr, x, y, day, temp, w)
-  -- text
+function text_dt(d, t)
+  return string.format('%s  %+d', d, t):gsub('-', '–'):gsub('+0', '0')
+end
 
-  local text = string.format('%s  %+d', day, temp):gsub('-', '–'):gsub('+0', '0')
+function text_t(t)
+  return string.format('%+d', t):gsub('-', '–'):gsub('+0', '0')
+end
+
+function draw_weather(cr, x, y, day, temp, weather, w)
   local ext = cairo_text_extents_t:create()
-
   tolua.takeownership(ext)
   set_rgba(cr, text_rgba)
-  cairo_text_extents(cr, text, ext)
-  cairo_move_to(cr, x + 40 - ext.x_bearing, y + 16 + ext.height / 2)
-  cairo_show_text(cr, text)
+
+  -- day
+
+  cairo_text_extents(cr, day, ext)
+  local yt = y + 16 + ext.height / 2
+  cairo_move_to(cr, x + 40 - ext.x_bearing, yt)
+  cairo_show_text(cr, day)
+
+  -- temp
+
+  local t = text_t(temp)
+
+  cairo_text_extents(cr, t, ext)
+  cairo_move_to(cr, x + 40 + w - ext.width, yt)
+  cairo_show_text(cr, t)
 
   -- construct icon
 
   cairo_push_group(cr)
 
-  local off = rex.find(w, '[sr]\\d') and 0 or 4
+  local off = rex.find(weather, '[sr]\\d') and 0 or 4
   draw_img(cr, x, y + off, 'sun', sun_rgba)
 
-  for m in rex.gmatch(w, 'st|[rsc]\\d') do
+  for m in rex.gmatch(weather, 'st|[rsc]\\d') do
     local yy = y
     local ch = m:sub(1,1)
     local c = m == 'st' and storm_rgba or w2c[ch]

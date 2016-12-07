@@ -50,27 +50,31 @@ def xweather( fcc, day, time ):
   return fcc.xpath(weather_xpath % (day, time))[0]
 
 wk_map = {
-  'ясно'        : None,
-  'малооблачно' : 'c',
-  'облачно'     : 'c',
-  'пасмурно'    : 'c',
-  'снег'        : 's',
-  'дождь'       : 'r',
-  'небольшой'   : None,
-  'сильный'     : None,
-  'гроза'       : 'st'
+  'ясно'            : None,
+  'малооблачно'     : 'c',
+  'облачно'         : 'c',
+  'пасмурно'        : 'c',
+  'небольшой снег'  : 's',
+  'снег'            : 's',
+  'снегопад'        : 's',
+  'небольшой дождь' : 'r',
+  'дождь'           : 'r',
+  'сильный дождь'   : 'r',
+  'гроза'           : 'st'
 }
 
 wv_map = {
-  'ясно'        : None,
-  'малооблачно' : 1,
-  'облачно'     : 2,
-  'пасмурно'    : 4,
-  'снег'        : 2,
-  'дождь'       : 2,
-  'небольшой'   : 1,
-  'сильный'     : 3,
-  'гроза'       : None
+  'ясно'            : None,
+  'малооблачно'     : 1,
+  'облачно'         : 2,
+  'пасмурно'        : 4,
+  'небольшой снег'  : 1,
+  'снег'            : 2,
+  'снегопад'        : 3,
+  'небольшой дождь' : 1,
+  'дождь'           : 2,
+  'сильный дождь'   : 3,
+  'гроза'           : None
 }
 
 def get_weather( w ):
@@ -80,16 +84,14 @@ def get_weather( w ):
   for i in arr:
     k = None
     v = None
-    for j in i.split():
-      try:
-        k = wk_map[j]
-        if not v:
-          v = wv_map[j]
-        if k:
-          res[k] = v
-      except KeyError:
-        print('ERR: Invalid weather item \'%s\'' % j)
-        quit()
+
+    try:
+      k = wk_map[i]
+      v = wv_map[i]
+      res[k] = v
+    except KeyError:
+      print('ERR: Invalid weather item \'%s\'' % i)
+      quit()
 
   return res
 

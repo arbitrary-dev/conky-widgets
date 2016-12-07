@@ -28,7 +28,7 @@ function conky_main()
 
   cairo_push_group(cr)
   -- TODO http://w3.impa.br/~diego/software/luasocket & http://luaxpath.luaforge.net
-  -- 'Sat -13 s3c4\nSun 2 r3c3st\nMon 39 c1'
+  -- 'Mon -3 s3c2\nTue 0 r2c4st\nWed 9 '
   local weather = conky_parse('${exec python ' .. path .. '/src/parse-gismeteo.py}')
 
   if not handle_error(cr, weather) then

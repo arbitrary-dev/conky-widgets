@@ -79,9 +79,10 @@ wv_map = {
 
 def get_weather( w ):
   res = {}
-  arr = w.lower().split(', ')
+  arr = w.lower().split(',')
 
   for i in arr:
+    i = i.strip()
     k = None
     v = None
 
@@ -90,7 +91,7 @@ def get_weather( w ):
       v = wv_map[i]
       res[k] = v
     except KeyError:
-      print('ERR: Invalid weather item \'%s\'' % i)
+      print('ERR: Invalid weather item \'%s\' in \'%s\'' % (i, w))
       quit()
 
   return res

@@ -10,7 +10,7 @@ from mpd import MPDClient
 mpd_host = 'localhost'
 mpd_port = 6600
 mpd_dir = '/media/music/'
-cover_pat = re.compile('(cover|folder)\.(jpe?g|png)', re.I)
+cover_pat = re.compile('.*(cover|folder|front).*\.(jpe?g|png)$', re.I)
 no_cover_file = ''
 no_album = ''
 

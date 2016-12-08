@@ -14,128 +14,128 @@ ua = 'Mozilla/5.0 (X11; Linux x86_64; rv:41.0) Gecko/20100101 Firefox/41.0'
 day_xpath = 'div[contains(@class, "frame_header")]/div[contains(@class, "item")][%d]/span/text()'
 
 def xday( fcc, day ):
-  return fcc.xpath(day_xpath % day)[0]
+    return fcc.xpath(day_xpath % day)[0]
 
 d_map = {
-  'пн': 'Mon',
-  'вт': 'Tue',
-  'ср': 'Wed',
-  'чт': 'Thu',
-  'пт': 'Fri',
-  'сб': 'Sat',
-  'вс': 'Sun'
+    'пн': 'Mon',
+    'вт': 'Tue',
+    'ср': 'Wed',
+    'чт': 'Thu',
+    'пт': 'Fri',
+    'сб': 'Sat',
+    'вс': 'Sun'
 }
 
 def get_day( fcc, day ):
-  return d_map[xday(fcc, day)[:2].lower()]
+    return d_map[xday(fcc, day)[:2].lower()]
 
 # temperature
 
 temp_xpath = 'div[contains(@class, "templine")]/div/div[contains(@class, "item")][(%d-1)*8+%d]/@data-air'
 
 def xtemp( fcc, day, time ):
-  return fcc.xpath(temp_xpath % (day, time))[0]
+    return fcc.xpath(temp_xpath % (day, time))[0]
 
 def get_temp( t ):
-  return int(t)
+    return int(t)
 
 def avg_temp( l ):
-  return round(sum(l) / len(l))
+    return round(sum(l) / len(l))
 
 # weather
 
 weather_xpath = 'div[contains(@class, "iconline")]/div[contains(@class, "item")][(%d-1)*8+%d]/span/text()'
 
 def xweather( fcc, day, time ):
-  return fcc.xpath(weather_xpath % (day, time))[0]
+    return fcc.xpath(weather_xpath % (day, time))[0]
 
 wk_map = {
-  'ясно'            : None,
-  'малооблачно'     : 'c',
-  'облачно'         : 'c',
-  'пасмурно'        : 'c',
-  'небольшой снег'  : 's',
-  'снег'            : 's',
-  'снегопад'        : 's',
-  'небольшой дождь' : 'r',
-  'дождь'           : 'r',
-  'сильный дождь'   : 'r',
-  'гроза'           : 'st'
+    'ясно'            : None,
+    'малооблачно'     : 'c',
+    'облачно'         : 'c',
+    'пасмурно'        : 'c',
+    'небольшой снег'  : 's',
+    'снег'            : 's',
+    'снегопад'        : 's',
+    'небольшой дождь' : 'r',
+    'дождь'           : 'r',
+    'сильный дождь'   : 'r',
+    'гроза'           : 'st'
 }
 
 wv_map = {
-  'ясно'            : None,
-  'малооблачно'     : 1,
-  'облачно'         : 2,
-  'пасмурно'        : 4,
-  'небольшой снег'  : 1,
-  'снег'            : 2,
-  'снегопад'        : 3,
-  'небольшой дождь' : 1,
-  'дождь'           : 2,
-  'сильный дождь'   : 3,
-  'гроза'           : None
+    'ясно'            : None,
+    'малооблачно'     : 1,
+    'облачно'         : 2,
+    'пасмурно'        : 4,
+    'небольшой снег'  : 1,
+    'снег'            : 2,
+    'снегопад'        : 3,
+    'небольшой дождь' : 1,
+    'дождь'           : 2,
+    'сильный дождь'   : 3,
+    'гроза'           : None
 }
 
 def get_weather( w ):
-  res = {}
-  arr = w.lower().split(',')
+    res = {}
+    arr = w.lower().split(',')
 
-  for i in arr:
-    i = i.strip()
-    k = None
-    v = None
+    for i in arr:
+        i = i.strip()
+        k = None
+        v = None
 
-    try:
-      k = wk_map[i]
-      v = wv_map[i]
-      res[k] = v
-    except KeyError:
-      print('ERR: Invalid weather item \'%s\' in \'%s\'' % (i, w))
-      quit()
+        try:
+            k = wk_map[i]
+            v = wv_map[i]
+            res[k] = v
+        except KeyError:
+            print('ERR: Invalid weather item \'%s\' in \'%s\'' % (i, w))
+            quit()
 
-  return res
+    return res
 
 def worst_weather( l ):
-  res = {}
+    res = {}
 
-  for w in l:
-    for i in w.items():
-      key = i[0]
-      val = i[1]
-      prev = res.get(key, None)
-      if not prev or prev < val:
-        res[key] = val
+    for w in l:
+        for i in w.items():
+            key = i[0]
+            val = i[1]
+            prev = res.get(key, None)
+            if not prev or prev < val:
+                res[key] = val
 
-  return res
+    return res
 
 def format_weather( w ):
-  res = ''
-  for i in w.items():
-    res += i[0]
-    if i[1]:
-      res += str(i[1])
-  return res
+    res = ''
+    for i in w.items():
+        res += i[0]
+        if i[1]:
+            res += str(i[1])
+    return res
 
 def print_fcast( fcc, d ):
-  day = get_day(fcc, d)
+    day = get_day(fcc, d)
 
-  time_rng = range(3, 8)
+    time_rng = range(3, 8)
 
-  ts = [get_temp(xtemp(fcc, d, t)) for t in time_rng]
-  temp = avg_temp(ts)
+    ts = [get_temp(xtemp(fcc, d, t)) for t in time_rng]
+    temp = avg_temp(ts)
 
-  ws = [get_weather(xweather(fcc, d, t)) for t in time_rng]
-  weather = format_weather(worst_weather(ws))
+    ws = [get_weather(xweather(fcc, d, t)) for t in time_rng]
+    weather = format_weather(worst_weather(ws))
 
-  print('%s %d %s' % (day, temp, weather))
+    print('%s %d %s' % (day, temp, weather))
 
 fcc_xpath = '//div[contains(@class, "forecast_container")]'
 
 def get_fcc(city):
-  page = requests.get(link % city, headers={'user-agent': ua})
-  tree = html.fromstring(page.text)
-  return tree.xpath(fcc_xpath)[0]
+    page = requests.get(link % city, headers={'user-agent': ua})
+    tree = html.fromstring(page.text)
+    return tree.xpath(fcc_xpath)[0]
 
 fcc = get_fcc(city)
 

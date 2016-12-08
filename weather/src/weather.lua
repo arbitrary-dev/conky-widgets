@@ -28,21 +28,29 @@ function conky_main()
 
   cairo_push_group(cr)
   -- TODO http://w3.impa.br/~diego/software/luasocket & http://luaxpath.luaforge.net
-  -- 'Mon -3 s3c2\nTue 0 r2c4st\nWed 9 '
+  -- 'Mon -3 s3c2\nTue 21 \nWed 0 r2c4st'
   local weather = conky_parse('${exec python ' .. path .. '/src/parse-gismeteo.py}')
 
   if not handle_error(cr, weather) then
     cairo_select_font_face(cr, f[1], CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL)
     cairo_set_font_size(cr, f[2])
 
-    local max_width = 0
-    local data = {}
     local ext = cairo_text_extents_t:create()
     tolua.takeownership(ext)
+
+    local max_width = { total = 0 }
+    cairo_text_extents(cr, '–', ext)
+    max_width.n = ext.width
+    cairo_text_extents(cr, '+', ext)
+    max_width.p = ext.width
+
+    local data = {}
     for d, t, w in rex.gmatch(weather, '(\\w+)\\s(-?\\d+)\\s([0-9rsct]*)') do
       table.insert(data, {day = d, temp = t, weather = w})
+
+      -- max_width.total calculated excluding numerical value of temp, only 'Wed–<sign>'
       cairo_text_extents(cr, text_dt(d, t), ext)
-      max_width = math.max(max_width, ext.width)
+      max_width.total = math.max(max_width.total, ext.width)
     end
     ext = nil
 
@@ -126,11 +134,18 @@ w2c = {
 }
 
 function text_dt(d, t)
-  return string.format('%s  %+d', d, t):gsub('-', '–'):gsub('+0', '0')
+  t = tonumber(t)
+  local c = t < 0 and '–' or t > 0 and '+' or ''
+  return string.format('%s–%s', d, c)
 end
 
 function text_t(t)
   return string.format('%+d', t):gsub('-', '–'):gsub('+0', '0')
+end
+
+function sign_w(w, temp)
+  local t = tonumber(temp)
+  return t < 0 and w.n or t > 0 and w.p or 0
 end
 
 function draw_weather(cr, x, y, day, temp, weather, w)
@@ -147,11 +162,8 @@ function draw_weather(cr, x, y, day, temp, weather, w)
 
   -- temp
 
-  local t = text_t(temp)
-
-  cairo_text_extents(cr, t, ext)
-  cairo_move_to(cr, x + 40 + w - ext.width, yt)
-  cairo_show_text(cr, t)
+  cairo_move_to(cr, x + 40 + w.total - sign_w(w, temp), yt)
+  cairo_show_text(cr, text_t(temp))
 
   -- construct icon
 

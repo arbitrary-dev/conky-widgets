@@ -102,6 +102,8 @@ def worst_weather( l ):
     for w in l:
         for i in w.items():
             key = i[0]
+            if not key:
+                continue
             val = i[1]
             prev = res.get(key, None)
             if not prev or prev < val:

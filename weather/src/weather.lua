@@ -1,5 +1,6 @@
 require 'cairo'
 rex = require 'rex_pcre'
+utf8 = require 'utf8'
 
 w_width, w_height = 120, 100
 
@@ -77,7 +78,7 @@ function handle_error(cr, weather)
   cairo_set_font_size(cr, f_err[2])
   set_rgba(cr, text_rgba)
 
-  ml_text(cr, weather, 13, 0, w_width - 15, 1.5) -- strange magic on 'w_width - 13'
+  ml_text(cr, weather, 13, 0, w_width - 13, 1.5)
 
   return true
 end
@@ -91,7 +92,7 @@ function ml_text(cr, txt, x, y, w, lr)
   local t                    -- line text
   local lh = ext.height * lr -- line height
 
-  for word in txt:gmatch('%S+') do
+  for word in utf8.gmatch(txt, '%S+') do
     local i
     repeat
       i = 0
@@ -99,17 +100,17 @@ function ml_text(cr, txt, x, y, w, lr)
 
       repeat
         i = i + 1
-        tt = (t and (t .. ' ') or '') .. word:sub(1, -i)
+        tt = (t and (t .. ' ') or '') .. utf8.sub(word, 1, -i) .. (i > 1 and '-' or '')
         cairo_text_extents(cr, tt, ext)
-      until (t and t:len() == tt:len() - 1) or ext.width <= w
+      until (t and utf8.len(t) == utf8.len(tt) - 1) or ext.width <= w
 
       if ext.width > w or i > 1 then
         cairo_move_to(cr, x, y + line * lh)
         line = line + 1
 
-        if i > 1 and (not t or tt:len() - t:len() > 2) then
+        if i > 1 and (not t or utf8.len(tt) - utf8.len(t) > 3) then
           cairo_show_text(cr, tt)
-          word = word:sub(-i + 1, -1)
+          word = utf8.sub(word, -i + 1, -1)
         else
           cairo_show_text(cr, t)
         end

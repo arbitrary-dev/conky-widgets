@@ -51,6 +51,7 @@ def xweather( fcc, day, time ):
 
 wk_map = {
     'ясно'            : None,
+    'поземок'         : None,
     'малооблачно'     : 'c',
     'облачно'         : 'c',
     'пасмурно'        : 'c',
@@ -64,7 +65,6 @@ wk_map = {
 }
 
 wv_map = {
-    'ясно'            : None,
     'малооблачно'     : 1,
     'облачно'         : 2,
     'пасмурно'        : 4,
@@ -74,7 +74,6 @@ wv_map = {
     'небольшой дождь' : 1,
     'дождь'           : 2,
     'сильный дождь'   : 3,
-    'гроза'           : None
 }
 
 def get_weather( w ):
@@ -88,7 +87,9 @@ def get_weather( w ):
 
         try:
             k = wk_map[i]
-            v = wv_map[i]
+            if not k:
+                continue
+            v = wv_map.get(i, None)
             res[k] = v
         except KeyError:
             print('ERR: Invalid weather item \'%s\' in \'%s\'' % (i, w))
@@ -102,8 +103,6 @@ def worst_weather( l ):
     for w in l:
         for i in w.items():
             key = i[0]
-            if not key:
-                continue
             val = i[1]
             prev = res.get(key, None)
             if not prev or prev < val:

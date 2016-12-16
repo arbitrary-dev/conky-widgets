@@ -6,12 +6,19 @@ import requests
 # settings
 
 city = '4476'
-link = 'https://www.gismeteo.ru/weather-perm-%s/hourly'
+link = 'https://www.gismeteo.ru/weather-perm-%s/3-days'
 ua = 'Mozilla/5.0 (X11; Linux x86_64; rv:41.0) Gecko/20100101 Firefox/41.0'
+
+# forecast container
+
+fcc_xpath = '//div[contains(@class, "forecast_container")]'
+
+def get_fcc(tree, city):
+    return tree.xpath(fcc_xpath)[0]
 
 # day
 
-day_xpath = 'div[contains(@class, "frame_header")]/div[contains(@class, "item")][%d]/span/text()'
+day_xpath = 'div/div[contains(@class, "header_item")][%d]/a/text()'
 
 def xday( fcc, day ):
     return fcc.xpath(day_xpath % day)[0]
@@ -26,25 +33,33 @@ d_map = {
     'вс': 'Sun'
 }
 
-def get_day( fcc, day ):
-    return d_map[xday(fcc, day)[:2].lower()]
+def parse_day( day ):
+    return d_map[day[:2].lower()]
+
+def _day( fcc, day ):
+    return parse_day(xday(fcc, day))
 
 # temperature
 
-temp_xpath = 'div[contains(@class, "templine")]/div/div[contains(@class, "item")][(%d-1)*8+%d]/@data-air'
+time_calc = '(%d-1)*4+%d'
+temp_xpath = 'div[contains(@class, "templine")]/div/div[contains(@class, "item")][' + time_calc + ']/@data-air'
 
 def xtemp( fcc, day, time ):
     return fcc.xpath(temp_xpath % (day, time))[0]
 
-def get_temp( t ):
+def parse_temp( t ):
     return int(t)
 
-def avg_temp( l ):
-    return round(sum(l) / len(l))
+def avg_temp( ts ):
+    return round(sum(ts) / len(ts))
+
+def _temp(fcc, day, time_rng):
+    ts = [parse_temp(xtemp(fcc, day, t)) for t in time_rng]
+    return avg_temp(ts)
 
 # weather
 
-weather_xpath = 'div[contains(@class, "iconline")]/div[contains(@class, "item")][(%d-1)*8+%d]/span/text()'
+weather_xpath = 'div[contains(@class, "iconline")]/div[contains(@class, "item")][' + time_calc + ']/span/text()'
 
 def xweather( fcc, day, time ):
     return fcc.xpath(weather_xpath % (day, time))[0]
@@ -78,7 +93,7 @@ wv_map = {
     'сильный дождь'   : 3,
 }
 
-def get_weather( w ):
+def parse_weather( w ):
     res = {}
     arr = w.lower().split(',')
 
@@ -120,28 +135,28 @@ def format_weather( w ):
             res += str(i[1])
     return res
 
-def print_fcast( fcc, d ):
-    day = get_day(fcc, d)
+def _weather( fcc, day, time_rng ):
+    ws = [parse_weather(xweather(fcc, day, t)) for t in time_rng]
+    return format_weather(worst_weather(ws))
 
-    time_rng = range(3, 8)
 
-    ts = [get_temp(xtemp(fcc, d, t)) for t in time_rng]
-    temp = avg_temp(ts)
+def print_fcast( fcc, day ):
+    time_rng = range(2, 5) # Утро, День, Вечер
 
-    ws = [get_weather(xweather(fcc, d, t)) for t in time_rng]
-    weather = format_weather(worst_weather(ws))
+    d = _day(fcc, day)
+    t = _temp(fcc, day, time_rng)
+    w = _weather(fcc, day, time_rng)
 
-    print('%s %d %s' % (day, temp, weather))
+    print('%s %d %s' % (d, t, w))
 
-fcc_xpath = '//div[contains(@class, "forecast_container")]'
+# main
 
-def get_fcc(city):
-    page = requests.get(link % city, headers={'user-agent': ua})
-    tree = html.fromstring(page.text)
-    return tree.xpath(fcc_xpath)[0]
+# TODO handle 404
+page = requests.get(link % city, headers={'user-agent': ua})
+tree = html.fromstring(page.text)
+fcc = get_fcc(tree, city)
 
-fcc = get_fcc(city)
-
+# TODO handle xpath exceptions
 print_fcast(fcc, 1)
 print_fcast(fcc, 2)
 print_fcast(fcc, 3)

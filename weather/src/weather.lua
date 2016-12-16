@@ -159,7 +159,7 @@ function draw_weather(cr, x, y, day, temp, weather, w)
 
   cairo_text_extents(cr, day, ext)
   local yt = y + 16 + ext.height / 2
-  cairo_move_to(cr, x + 40 - ext.x_bearing, yt)
+  cairo_move_to(cr, x + 40, yt)
   cairo_show_text(cr, day)
 
   -- temp

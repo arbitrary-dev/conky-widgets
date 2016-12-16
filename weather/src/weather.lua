@@ -102,7 +102,8 @@ function ml_text(cr, txt, x, y, w, lr)
         i = i + 1
         tt = (t and (t .. ' ') or '') .. utf8.sub(word, 1, -i) .. (i > 1 and '-' or '')
         cairo_text_extents(cr, tt, ext)
-      until (t and utf8.len(t) == utf8.len(tt) - 1) or ext.width <= w
+      until t and utf8.len(tt) - utf8.len(t) <= 3
+            or ext.width <= w
 
       if ext.width > w or i > 1 then
         cairo_move_to(cr, x, y + line * lh)

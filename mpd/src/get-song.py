@@ -5,7 +5,7 @@ import re
 from os import path, listdir
 from mpd import MPDClient
 
-# Here goes all the settings
+# settings
 
 mpd_host = 'localhost'
 mpd_port = 6600
@@ -13,6 +13,16 @@ mpd_dir = '/media/music/'
 cover_pat = re.compile('.*(cover|folder|front).*\.(jpe?g|png)$', re.I)
 no_cover_file = ''
 no_album = ''
+
+# helpers
+
+def get(song, what):
+    res = song.get(what);
+    if isinstance(res, list):
+        res = res[0]
+    return res
+
+# main
 
 c = MPDClient()
 c.connect(mpd_host, mpd_port)
@@ -35,14 +45,14 @@ if song:
             cover = tmp
             break
     print(cover if cover else no_cover_file)
-    artist = song.get('artist')
-    title = (song.get('title') or '').strip()
+    artist = get(song, 'artist')
+    title = (get(song, 'title') or '').strip()
     if title:
         print('{}{}'.format(artist + ' – ' if artist else '', title))
     else:
         print(path.basename(song['file']))
-    date = song.get('date')
-    album = (song.get('album') or no_album).strip()
+    date = get(song, 'date')
+    album = (get(song, 'album') or no_album).strip()
     if album:
         print('{}{}'.format(album, ' (' + date + ')' if date else ''))
     else:

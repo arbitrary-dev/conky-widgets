@@ -47,7 +47,7 @@ function conky_main()
 
     local data = {}
     for d, t, w in rex.gmatch(weather, '(\\w+)\\s(-?\\d+)\\s([0-9rsct]*)') do
-      table.insert(data, {day = d, temp = t, weather = w})
+      table.insert(data, {day = d, temp = t, weather = parse_weather(w)})
 
       -- max_width.total calculated excluding numerical value of temp, only 'Wed–<sign>'
       cairo_text_extents(cr, text_dt(d, t), ext)
@@ -55,8 +55,8 @@ function conky_main()
     end
     ext = nil
 
-    for i, d in ipairs(data) do
-      draw_weather(cr, 15, 2*37 - 37 * (i - 1), d.day, d.temp, d.weather, max_width)
+    for i, fc in ipairs(data) do
+      draw_weather(cr, 15, 2*37 - 37 * (i - 1), fc, max_width)
     end
   end
 
@@ -65,6 +65,14 @@ function conky_main()
 
   cairo_destroy(cr)
   cairo_surface_destroy(cs)
+end
+
+function parse_weather(weather)
+  res = {}
+  for i, v in rex.gmatch(weather, '(st|[rsc])(\\d|)') do
+    res[i] = v or true
+  end
+  return res
 end
 
 function handle_error(cr, weather)
@@ -129,12 +137,6 @@ function ml_text(cr, txt, x, y, w, lr)
   cairo_show_text(cr, t)
 end
 
-w2c = {
-  r = rain_rgba,
-  s = snow_rgba,
-  c = clouds_rgba
-}
-
 function text_dt(d, t)
   t = tonumber(t)
   local c = t < 0 and '–' or t > 0 and '+' or ''
@@ -150,7 +152,18 @@ function sign_w(w, temp)
   return t < 0 and w.n or t > 0 and w.p or 0
 end
 
-function draw_weather(cr, x, y, day, temp, weather, w)
+i2color = {
+  r  = rain_rgba,
+  s  = snow_rgba,
+  c  = clouds_rgba,
+  st = storm_rgba
+}
+
+function draw_weather(cr, x, y, fc, mw)
+  local day = fc.day
+  local temp = fc.temp
+  local w = fc.weather
+
   local ext = cairo_text_extents_t:create()
   tolua.takeownership(ext)
   set_rgba(cr, text_rgba)
@@ -164,30 +177,45 @@ function draw_weather(cr, x, y, day, temp, weather, w)
 
   -- temp
 
-  cairo_move_to(cr, x + 40 + w.total - sign_w(w, temp), yt)
+  cairo_move_to(cr, x + 40 + mw.total - sign_w(mw, temp), yt)
   cairo_show_text(cr, text_t(temp))
 
   -- construct icon
 
   cairo_push_group(cr)
 
-  local off = rex.find(weather, '[sr]\\d') and 0 or 4
+  if w.r and w.s then
+    if w.s > w.r then
+      w.r = nil
+    else
+      w.s = nil
+    end
+  end
+
+  local off = (w.r or w.s) and 0 or 4
+
   draw_img(cr, x, y + off, 'sun', sun_rgba)
 
-  for m in rex.gmatch(weather, 'st|[rsc]\\d') do
+  for i, v in pairs(w) do
+    local xx = x
     local yy = y
-    local ch = m:sub(1,1)
-    local c = m == 'st' and storm_rgba or w2c[ch]
 
-    if ch == 'c' then
-      yy = yy + off
+    local color = i2color[i]
+
+    if i == 'st' or i == 'c' then
+      local ii = i .. (tonumber(v) or '')
+
+      if i == 'c' then yy = yy + off end
+
+      draw_img(cr, xx, yy, ii .. '-b', nil)
+      draw_img(cr, xx, yy, ii, color)
+    else
+      xx = xx + 15 + (w.r and 1 or 0) - v * 4
+      yy = yy + 24
+
+      for j = 0, v-1 do draw_img(cr, xx + j * 8, yy, i, color) end
     end
 
-    if m == 'st' or ch == 'c' then
-      draw_img(cr, x, yy, m .. '-b', nil)
-    end
-
-    draw_img(cr, x, yy, m, c)
   end
 
   cairo_pop_group_to_source(cr)

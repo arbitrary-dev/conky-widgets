@@ -211,7 +211,7 @@ function draw_weather(cr, x, y, fc, mw)
       draw_img(cr, xx, yy, ii, color)
     else
       xx = xx + 15 + (w.r and 1 or 0) - v * 4
-      yy = yy + 24
+      yy = yy + 23
 
       for j = 0, v-1 do draw_img(cr, xx + j * 8, yy, i, color) end
     end

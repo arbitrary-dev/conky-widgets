@@ -42,7 +42,7 @@ def _day( fcc, day ):
 # temperature
 
 time_calc = '(%d-1)*4+%d'
-temp_xpath = 'div[contains(@class, "templine")]/div/div[contains(@class, "item")][' + time_calc + ']/@data-air'
+temp_xpath = 'div[contains(@class, "templine")]/div/div[contains(@class, "item")][' + time_calc + ']/@data-value'
 
 def xtemp( fcc, day, time ):
     return fcc.xpath(temp_xpath % (day, time))[0]

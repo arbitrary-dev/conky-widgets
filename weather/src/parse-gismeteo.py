@@ -64,57 +64,40 @@ weather_xpath = 'div[contains(@class, "iconline")]/div[contains(@class, "item")]
 def xweather( fcc, day, time ):
     return fcc.xpath(weather_xpath % (day, time))[0]
 
-wk_map = {
+w_map = {
     'ясно'            : None,
     'поземок'         : None,
     'гололед'         : None,
-    'малооблачно'     : 'c',
-    'облачно'         : 'c',
-    'пасмурно'        : 'c',
-    'небольшой снег'  : 's',
-    'снег'            : 's',
-    'ледяные иглы'    : 's',
-    'снегопад'        : 's',
-    'сильный снег'    : 's',
-    'дождь со снегом' : 's',
-    'небольшой дождь' : 'r',
-    'дождь'           : 'r',
-    'сильный дождь'   : 'r',
-    'гроза'           : 'st'
+    'малооблачно'     : ('c',  1   ),
+    'облачно'         : ('c',  2   ),
+    'пасмурно'        : ('c',  4   ),
+    'небольшой снег'  : ('s',  1   ),
+    'снег'            : ('s',  2   ),
+    'ледяные иглы'    : ('s',  2   ),
+    'дождь со снегом' : ('s',  2   ),
+    'снегопад'        : ('s',  3   ),
+    'сильный снег'    : ('s',  3   ),
+    'небольшой дождь' : ('r',  1   ),
+    'дождь'           : ('r',  2   ),
+    'сильный дождь'   : ('r',  3   ),
+    'гроза'           : ('st', None)
 }
 
-wv_map = {
-    'малооблачно'     : 1,
-    'облачно'         : 2,
-    'пасмурно'        : 4,
-    'небольшой снег'  : 1,
-    'снег'            : 2,
-    'ледяные иглы'    : 2,
-    'дождь со снегом' : 2,
-    'снегопад'        : 3,
-    'сильный снег'    : 3,
-    'небольшой дождь' : 1,
-    'дождь'           : 2,
-    'сильный дождь'   : 3,
-}
-
-def parse_weather( w ):
+def parse_weather( weather ):
     res = {}
-    arr = w.lower().split(',')
+    arr = weather.lower().split(',')
 
     for i in arr:
         i = i.strip()
-        k = None
-        v = None
+        w = None
 
         try:
-            k = wk_map[i]
-            if not k:
+            w = w_map[i]
+            if not w:
                 continue
-            v = wv_map.get(i, None)
-            res[k] = v
+            res[w[0]] = w[1]
         except KeyError:
-            print('ERR: Invalid weather item \'%s\' in \'%s\'' % (i, w))
+            print('ERR: Invalid weather item \'%s\' in \'%s\'' % (i, weather))
             quit()
 
     return res

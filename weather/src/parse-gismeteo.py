@@ -78,6 +78,7 @@ w_map = {
     'снегопад'        : ('s',  3   ),
     'сильный снег'    : ('s',  3   ),
     'небольшой дождь' : ('r',  1   ),
+    'осадки'          : ('r',  1   ),
     'дождь'           : ('r',  2   ),
     'сильный дождь'   : ('r',  3   ),
     'гроза'           : ('st', None)
@@ -128,14 +129,14 @@ def _weather( fcc, day, time_rng ):
     return format_weather(worst_weather(ws))
 
 
-def print_fcast( fcc, day ):
+def fcast( fcc, day ):
     time_rng = range(2, 5) # Утро, День, Вечер
 
     d = _day(fcc, day)
     t = _temp(fcc, day, time_rng)
     w = _weather(fcc, day, time_rng)
 
-    print('%s %d %s' % (d, t, w))
+    return '%s %d %s' % (d, t, w)
 
 # main
 
@@ -145,7 +146,4 @@ tree = html.fromstring(page.text)
 fcc = get_fcc(tree, city)
 
 # TODO handle xpath exceptions
-print_fcast(fcc, 1)
-print_fcast(fcc, 2)
-print_fcast(fcc, 3)
-
+print('\n'.join([ fcast(fcc, 1), fcast(fcc, 2), fcast(fcc, 3) ]))

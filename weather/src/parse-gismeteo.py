@@ -59,7 +59,7 @@ def _temp(fcc, day, time_rng):
 
 # weather
 
-weather_xpath = 'div[contains(@class, "iconline")]/div[contains(@class, "item")][' + time_calc + ']/div/@data-text'
+weather_xpath = 'div[contains(@class, "tooltip")][' + time_calc + ']/@data-text'
 
 def xweather( fcc, day, time ):
     return fcc.xpath(weather_xpath % (day, time))[0]

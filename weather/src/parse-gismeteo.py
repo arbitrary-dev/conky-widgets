@@ -2,9 +2,12 @@
 
 from lxml import html
 import requests
+from requests.packages.urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
 
 # settings
 
+retries = Retry(total = 30, backoff_factor = 0.5)
 city = '4476'
 link = 'https://www.gismeteo.ru/weather-perm-%s/3-days'
 ua = 'Mozilla/5.0 (X11; Linux x86_64; rv:41.0) Gecko/20100101 Firefox/41.0'
@@ -141,7 +144,9 @@ def fcast( fcc, day ):
 # main
 
 # TODO handle 404
-page = requests.get(link % city, headers={'user-agent': ua})
+session = requests.Session()
+session.mount('https://', HTTPAdapter(max_retries = retries))
+page = session.get(link % city, headers={'user-agent': ua}, timeout=5)
 tree = html.fromstring(page.text)
 fcc = get_fcc(tree, city)
 

@@ -29,7 +29,7 @@ function conky_main()
 
   cairo_push_group(cr)
   -- TODO http://w3.impa.br/~diego/software/luasocket & http://luaxpath.luaforge.net
-  -- 'Mon -3 s3c2\nTue 21 \nWed 0 r2c4st'
+  -- local weather = 'Mon -3 s3c2\nTue 21 \nWed 0 c4r2st'
   local weather = conky_parse('${exec python ' .. path .. '/src/parse-gismeteo.py}')
 
   if not handle_error(cr, weather) then
@@ -194,28 +194,39 @@ function draw_weather(cr, x, y, fc, mw)
 
   local off = (w.r or w.s) and 0 or 4
 
+  -- sun
+
   draw_img(cr, x, y + off, 'sun', sun_rgba)
 
+  -- precipitation
+
   for i, v in pairs(w) do
-    local xx = x
-    local yy = y
+    if i == 'r' or i == 's' then
+      local xx = x + 15 + (w.r and 1 or 0) - v * 4
+      local yy = y + 23
 
-    local color = i2color[i]
-
-    if i == 'st' or i == 'c' then
-      local ii = i .. (tonumber(v) or '')
-
-      if i == 'c' then yy = yy + off end
-
-      draw_img(cr, xx, yy, ii .. '-b', nil)
-      draw_img(cr, xx, yy, ii, color)
-    else
-      xx = xx + 15 + (w.r and 1 or 0) - v * 4
-      yy = yy + 23
-
-      for j = 0, v-1 do draw_img(cr, xx + j * 8, yy, i, color) end
+      for j = 0, v-1 do draw_img(cr, xx + j * 8, yy, i, i2color[i]) end
     end
+  end
 
+  -- clouds
+
+  if w.c then
+    local i = 'c' .. tonumber(w.c)
+    local yy = y + off
+
+    draw_img(cr, x, yy, i .. '-b', nil)
+    draw_img(cr, x, yy, i, clouds_rgba)
+  end
+
+  -- storm
+
+  if w.st then
+    local xx = x - 1
+    local yy = y + off - 2
+
+    draw_img(cr, xx, yy, 'st' .. '-b', nil)
+    draw_img(cr, xx, yy, 'st', storm_rgba)
   end
 
   cairo_pop_group_to_source(cr)
